@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>あけおめカウンター</title>
+</head>
+
+<body>
+
+    <div style="text-align: center;">
+        ローカルタイムラインで文字を数えるよ！
+        <div>
+
+            <div style="text-align: center;">
+                <input type="text" id="instance_text" placeholder="インスタンス名" value="best-friends.chat">
+                <input type="password" id="access_token_text" placeholder="アクセストークン">
+                <input type="text" id="count_text" placeholder="カウントする文字" value="あけおめ">
+                <input type="button" id="sample" value="送信" onclick="count_start()">
+            </div>
+
+            <!-- 結果 -->
+            <div style="text-align: center;">
+                <font id="count_total"></font>
+                <font id="count_list"></font>
+                <div>
+
+
+</body>
+
+<script>
+
+    function count_start() {
+
+        const instance = document.getElementById('instance_text').value;
+        const access_token = document.getElementById('access_token_text').value;
+        const count_text = document.getElementById('count_text').value;
+        const count_value = document.getElementById('count_list');
+        const count_total = document.getElementById('count_total');
+        var count = 0;
+        const url = "wss://" + instance + "/api/v1/streaming/?stream=public:local" + "&access_token" + access_token;
+
+        // WebSocket 接続を作成する
+        const socket = new WebSocket(url);
+
+        // 接続を開く
+        socket.addEventListener('open', function (event) {
+            socket.send('接続した');
+            alert('接続しました');
+        });
+
+        // メッセージを待ち受ける
+        socket.addEventListener('message', function (event) {
+            const data = event.data;
+            //JSONパース
+            obj = JSON.parse(data);
+            //必要な部分(一回文字列にしてる)
+            const content = obj.payload;
+            content_json = JSON.parse(content);
+            //本文
+            const text = content_json.content;
+            //文字か含まれているか確認
+            if (text.match(count_text)) {
+                count = count + 1;
+                count_value.innerHTML = text + count_value.innerHTML;
+                count_total.innerText = count_text + 'を含んだトゥート数 : ' + count;
+            }
+        });
+    }
+
+
+</script>
+
+</html>
